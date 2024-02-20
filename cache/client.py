@@ -27,6 +27,6 @@ key2, valid, value = resHdr.unpack(res)
 assert key2 == key
 
 if valid:
-    print(value)
+    print(key2, valid, value)
 else:
     print("NOTFOUND")
