@@ -38,6 +38,7 @@
       },
       "action_name": "MyIngress.cache_hit",
       "action_params": {
+        "is_valid": 1,
         "value": 123
       }
     },
@@ -48,6 +49,7 @@
       },
       "action_name": "MyIngress.cache_hit",
       "action_params": {
+        "is_valid": 1,
         "value": 345
       }
     },
@@ -58,6 +60,7 @@
       },
       "action_name": "MyIngress.cache_hit",
       "action_params": {
+        "is_valid": 1,
         "value": 678
       }
     }

@@ -150,13 +150,13 @@ control MyIngress(inout headers hdr,
         default_action = drop();
     }
 
-    action cache_hit(bit<32> value) {
+    action cache_hit(bit<8> is_valid, bit<32> value) {
         bit<16> tmpPort; bit<48> tmpMAC; ip4Addr_t tmpAddr;
 
         // Use cached value
         hdr.response.setValid();
         hdr.response.rkey = hdr.request.rkey;
-        hdr.response.is_valid = 1;
+        hdr.response.is_valid = is_valid;
         hdr.response.value = value;
         hdr.request.setInvalid();
 
@@ -202,9 +202,12 @@ control MyIngress(inout headers hdr,
 
     // Cache2 values: cached values from the server's responses
     register<bit<32>>(NUMKEYS) cache2;
+    // Cache2 valid bit: if the key-value pair is valid in the server
+    register<bit<8>>(NUMKEYS) cache2_valid;
     // Cache2 present bit: if the key's value is present in the cache
     register<bit<1>>(NUMKEYS) cache2_present;
     bit<32> cache2_val;
+    bit<8> cache2_valid_val;
     bit<1> cache2_present_val;
 
     apply {
@@ -213,6 +216,7 @@ control MyIngress(inout headers hdr,
         // Update cache2
         if (hdr.response.isValid() && meta.parser_metadata.packet_type == RESPONSE) {
             cache2.write((bit<32>)hdr.response.rkey, hdr.response.value);
+            cache2_valid.write((bit<32>)hdr.response.rkey, hdr.response.is_valid);
             cache2_present.write((bit<32>)hdr.response.rkey, 1);
         }
         // Check cache1
@@ -224,7 +228,8 @@ control MyIngress(inout headers hdr,
                 // Cache2 hit
                 if (cache2_present_val == 1) {
                     cache2.read(cache2_val, (bit<32>)hdr.request.rkey);
-                    cache_hit(cache2_val);
+                    cache2_valid.read(cache2_valid_val, (bit<32>)hdr.request.rkey);
+                    cache_hit(cache2_valid_val, cache2_val);
                 }
             }
         }
